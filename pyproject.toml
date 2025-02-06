@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "easy-dotenv"
-version = "0.1.0"
+version = "0.1.2"
 description = "Easy environment variables management with type validation"
 readme = "README.md"
 authors = [{name = "Your Name", email = "your.email@example.com"}]

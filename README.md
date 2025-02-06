@@ -14,32 +14,59 @@ pip install easy-dotenv
 
 ## Usage
 
-Create an environment configuration file (e.g., `env_loader.py`):
+You can organize your environment variables by modules. For example:
+
 ```python
+# env_loader.py
 from easy_dotenv import EnvConfig
 
-class Env(EnvConfig):
-    # Required variables (will raise EnvMissingError if not set)
+class BaseEnv(EnvConfig):
+    # Base application settings
     port: int
     api_key: str
+    debug: bool = False     # Optional with default value
+    workers: int = 4        # Optional with default value
     
-    # Optional variables with default values
-    debug: bool = False
-    workers: int = 4
+class TelegramEnv(EnvConfig):
+    # Telegram-specific settings
+    bot_token: str
+    chat_id: str
+    channel_id: str = ''    # Optional with default empty string
 
-env = Env('..')  # Look for .env file in project root (see .env File Location below)
+# Both classes will look for .env in project root
+base = BaseEnv('..')
+telegram = TelegramEnv('..')
 
-__all__ = ['env']
+__all__ = ['base', 'telegram']
 ```
 
 Then use it in your code:
 ```python
-from env_loader import env
+from env_loader import base, telegram
 
-print(f"Port: {env.port}")           # Required, must be set in environment or .env
-print(f"API Key: {env.api_key}")     # Required, must be set in environment or .env
-print(f"Debug mode: {env.debug}")    # Optional, False if not set
-print(f"Workers: {env.workers}")     # Optional, 4 if not set
+# Access base configuration
+print(f"Port: {base.port}")
+print(f"API Key: {base.api_key}")
+print(f"Debug mode: {base.debug}")    # False if not set
+print(f"Workers: {base.workers}")     # 4 if not set
+
+# Access Telegram configuration
+print(f"Bot Token: {telegram.bot_token}")
+print(f"Chat ID: {telegram.chat_id}")
+print(f"Channel ID: {telegram.channel_id}")  # Empty string if not set
+```
+
+Your `.env` file:
+```env
+# Base
+PORT=8000
+API_KEY=your_api_key_here
+DEBUG=true
+
+# Telegram
+BOT_TOKEN=your_bot_token_here
+CHAT_ID=your_chat_id_here
+CHANNEL_ID=optional_channel_id
 ```
 
 ## Features

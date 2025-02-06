@@ -14,17 +14,17 @@ pip install easy-dotenv
 
 ## Usage
 
-First, create an environment configuration file (e.g., `env_loader.py`):
+Create an environment configuration file (e.g., `env_loader.py`):
 ```python
-from easy_dotenv import EnvLoader
+from easy_dotenv import EnvConfig
 
-# Initialize environment variables once
-env = EnvLoader.load(
-    port=int,
-    api_key=str,
-    debug=(bool, False),  # Optional with default value
-    workers=(int, 4)      # Optional with default value
-)
+class Env(EnvConfig):
+    port: int
+    api_key: str
+    debug: bool = False  # Optional with default value
+    workers: int = 4     # Optional with default value
+
+env = Env()
 
 __all__ = ['env']
 ```
@@ -46,19 +46,21 @@ print(f"Workers: {env.workers}")     # 4 if not set
 - Default values
 - .env file support
 - Clean and simple API
-- Type hints support
+- Full type hints support
+- No code duplication
 
 ## Error Handling
 
 The environment validation happens when you initialize the configuration:
 ```python
-from easy_dotenv import EnvLoader, EnvMissingError, EnvTypeError
+from easy_dotenv import EnvConfig, EnvMissingError, EnvTypeError
 
 try:
-    env = EnvLoader.load(
-        api_key=str,
-        port=int
-    )
+    class Env(EnvConfig):
+        api_key: str
+        port: int
+    
+    env = Env()
 except EnvMissingError as e:
     print("Missing environment variables:", e)
 except EnvTypeError as e:

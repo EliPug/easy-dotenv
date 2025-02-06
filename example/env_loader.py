@@ -1,10 +1,10 @@
-from easy_dotenv import EnvLoader
+from easy_dotenv import EnvConfig
 
-# Initialize environment variables once
-env = EnvLoader.load(
-    port=int,
-    api_key=str
-)
+class Env(EnvConfig):
+    port: int
+    api_key: str
+
+env = Env()
 
 # Export env variable
 __all__ = ['env']

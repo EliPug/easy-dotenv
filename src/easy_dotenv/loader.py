@@ -1,6 +1,24 @@
 import os
-from typing import Dict, Type, Union, Optional
+from typing import TypeVar, Any, cast, Type
+from dataclasses import make_dataclass
 from dotenv import load_dotenv
+from .types import RuntimeEnvironment, EnvVarsDict, T
+
+def create_env_class(**env_vars: EnvVarsDict) -> Type[Any]:
+    """Create a dataclass based on environment variables"""
+    fields = [
+        (name, var_type if not isinstance(var_type, tuple) else var_type[0])
+        for name, var_type in env_vars.items()
+    ]
+    return make_dataclass('GeneratedEnv', fields)
+
+class Environment(RuntimeEnvironment):
+    """Runtime environment container with type information"""
+    def __init__(self, **kwargs: Any):
+        self.__dict__.update(kwargs)
+
+    def __getattr__(self, name: str) -> Any:
+        raise AttributeError(f"Environment variable '{name}' is not defined")
 
 class EnvError(Exception):
     """Base exception for easy-dotenv errors"""
@@ -26,11 +44,12 @@ class EnvLoader:
         raise ValueError(f"Cannot convert '{value}' to bool")
 
     @classmethod
-    def load(cls, **env_vars: Dict[str, Union[Type, tuple[Type, Optional[any]]]]):
+    def load(cls, **env_vars: EnvVarsDict) -> T:
         load_dotenv()
         
-        instance = type('Environment', (), {})()
+        values = {}
         missing_vars = []
+        env_class = create_env_class(**env_vars)
         
         for var_name, var_type in env_vars.items():
             required = True
@@ -56,9 +75,9 @@ class EnvLoader:
                 except ValueError:
                     raise EnvTypeError(f"Environment variable {var_name.upper()} must be of type {var_type.__name__}")
             
-            setattr(instance, var_name, value)
+            values[var_name] = value
 
         if missing_vars:
             raise EnvMissingError(f"Missing required environment variables: {', '.join(missing_vars)}")
             
-        return instance
+        return cast(T, env_class(**values))
